@@ -86,7 +86,7 @@ void QwiicBtnComponent::clear_events_() {
 }
 
 void QwiicBtnComponent::set_led_brightness(uint8_t brightness) {
-  ESP_LOGD(TAG, "Setting LED brightness to %u", brightness);
+  ESP_LOGV(TAG, "Setting LED brightness to %u", brightness);
   // Steady (non-pulsing) brightness: granularity=1, cycle/off time=0, mirroring the Arduino library's
   // LEDon()/LEDoff() helpers.
   bool success = this->write_byte(QWIIC_BUTTON_LED_BRIGHTNESS, brightness);
@@ -94,7 +94,7 @@ void QwiicBtnComponent::set_led_brightness(uint8_t brightness) {
   success &= this->write_register_word_(QWIIC_BUTTON_LED_PULSE_CYCLE_TIME, 0);
   success &= this->write_register_word_(QWIIC_BUTTON_LED_PULSE_OFF_TIME, 0);
   if (!success) {
-    ESP_LOGV(TAG, "Failed to set LED brightness");
+    ESP_LOGW(TAG, "Failed to set LED brightness");
   }
 }
 
