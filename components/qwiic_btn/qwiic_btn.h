@@ -24,7 +24,7 @@ enum PressMode {
   LATCH_MODE,
 };
 
-class QwiicBtnComponent : public Component, public i2c::I2CDevice {
+class QwiicBtnComponent final : public Component, public i2c::I2CDevice {
   SUB_BINARY_SENSOR(pressed)
 
  public:
@@ -57,7 +57,7 @@ class QwiicBtnComponent : public Component, public i2c::I2CDevice {
   bool read_status_();
   void clear_events_();
   void update_pressed_state_(bool is_pressed);
-  bool write_register_16_(uint8_t a_register, uint16_t value);
+  bool write_register_word_(uint8_t a_register, uint16_t value);
 };
 
 class QwiicBtnLEDOutput final : public output::FloatOutput {

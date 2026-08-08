@@ -13,7 +13,7 @@
 
 namespace esphome::qwiic_btn {
 
-enum Qwiic_Button_Register : uint8_t {
+enum QwiicButtonRegister : uint8_t {
   QWIIC_BUTTON_ID = 0x00,
   QWIIC_BUTTON_FIRMWARE_MINOR = 0x01,
   QWIIC_BUTTON_FIRMWARE_MAJOR = 0x02,

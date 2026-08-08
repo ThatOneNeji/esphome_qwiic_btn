@@ -23,7 +23,7 @@ void QwiicBtnComponent::setup() {
     return;
   }
 
-  if (!this->write_register_16_(QWIIC_BUTTON_DEBOUNCE_TIME, this->debounce_time_)) {
+  if (!this->write_register_word_(QWIIC_BUTTON_DEBOUNCE_TIME, this->debounce_time_)) {
     ESP_LOGE(TAG, "Failed to configure debounce time");
     this->error_code_ = ERROR_COMMUNICATION_FAILED;
     this->mark_failed();
@@ -91,14 +91,14 @@ void QwiicBtnComponent::set_led_brightness(uint8_t brightness) {
   // LEDon()/LEDoff() helpers.
   bool success = this->write_byte(QWIIC_BUTTON_LED_BRIGHTNESS, brightness);
   success &= this->write_byte(QWIIC_BUTTON_LED_PULSE_GRANULARITY, 1);
-  success &= this->write_register_16_(QWIIC_BUTTON_LED_PULSE_CYCLE_TIME, 0);
-  success &= this->write_register_16_(QWIIC_BUTTON_LED_PULSE_OFF_TIME, 0);
+  success &= this->write_register_word_(QWIIC_BUTTON_LED_PULSE_CYCLE_TIME, 0);
+  success &= this->write_register_word_(QWIIC_BUTTON_LED_PULSE_OFF_TIME, 0);
   if (!success) {
-    ESP_LOGW(TAG, "Failed to set LED brightness");
+    ESP_LOGV(TAG, "Failed to set LED brightness");
   }
 }
 
-bool QwiicBtnComponent::write_register_16_(uint8_t a_register, uint16_t value) {
+bool QwiicBtnComponent::write_register_word_(uint8_t a_register, uint16_t value) {
   const uint8_t data[2] = {static_cast<uint8_t>(value & 0xFF), static_cast<uint8_t>(value >> 8)};
   return this->write_bytes(a_register, data, 2);
 }
