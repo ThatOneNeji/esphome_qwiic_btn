@@ -33,7 +33,11 @@ void QwiicBtnComponent::setup() {
   // Force the LED to a known state on every boot. The device otherwise keeps whatever brightness it last had
   // (its own power-on default, or a leftover value from before a reboot), independent of anything the `light`/
   // `output` platforms do once they start up.
-  this->set_led_brightness(this->default_led_brightness_);
+  //
+  // This has to be deferred: a `light` on top of our `output` applies its own restore_mode state on the first
+  // loop() tick (after every component's setup() has run), which would otherwise land after — and silently
+  // overwrite — a write made here directly in setup(). The delay just needs to clear that first tick.
+  this->set_timeout(100, [this]() { this->set_led_brightness(this->default_led_brightness_); });
 
   // Publish the starting state so the binary_sensor isn't left in an unknown state. In LATCH_MODE this is just
   // the initial (unpressed) latch_state_, not the raw pressed level.
@@ -82,12 +86,16 @@ void QwiicBtnComponent::clear_events_() {
 }
 
 void QwiicBtnComponent::set_led_brightness(uint8_t brightness) {
+  ESP_LOGD(TAG, "Setting LED brightness to %u", brightness);
   // Steady (non-pulsing) brightness: granularity=1, cycle/off time=0, mirroring the Arduino library's
   // LEDon()/LEDoff() helpers.
-  this->write_byte(QWIIC_BUTTON_LED_BRIGHTNESS, brightness);
-  this->write_byte(QWIIC_BUTTON_LED_PULSE_GRANULARITY, 1);
-  this->write_register_16_(QWIIC_BUTTON_LED_PULSE_CYCLE_TIME, 0);
-  this->write_register_16_(QWIIC_BUTTON_LED_PULSE_OFF_TIME, 0);
+  bool success = this->write_byte(QWIIC_BUTTON_LED_BRIGHTNESS, brightness);
+  success &= this->write_byte(QWIIC_BUTTON_LED_PULSE_GRANULARITY, 1);
+  success &= this->write_register_16_(QWIIC_BUTTON_LED_PULSE_CYCLE_TIME, 0);
+  success &= this->write_register_16_(QWIIC_BUTTON_LED_PULSE_OFF_TIME, 0);
+  if (!success) {
+    ESP_LOGW(TAG, "Failed to set LED brightness");
+  }
 }
 
 bool QwiicBtnComponent::write_register_16_(uint8_t a_register, uint16_t value) {
