@@ -1,0 +1,42 @@
+---
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pre-commit:
+    name: pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: pre-commit/action@v3.0.1
+
+  esphome:
+    name: esphome ${{ matrix.step }} (${{ matrix.file }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        file: [.github/ci/arduino.yaml, .github/ci/esp-idf.yaml]
+        step: [config, compile]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ESPHome
+        run: pip install esphome
+      - name: Fake secrets
+        # !secret resolves secrets.yaml next to the config file being parsed, not the CWD.
+        run: |
+          echo "wifi_ssid: \"test\"" > .github/ci/secrets.yaml
+          echo "wifi_password: \"testtest\"" >> .github/ci/secrets.yaml
+      - name: esphome ${{ matrix.step }}
+        run: esphome ${{ matrix.step }} "${{ matrix.file }}"
