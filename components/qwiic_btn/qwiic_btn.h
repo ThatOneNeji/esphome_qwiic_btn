@@ -17,6 +17,13 @@
 
 namespace esphome::qwiic_btn {
 
+// MOMENTARY: the binary_sensor reflects the button's live pressed state.
+// LATCH: the binary_sensor toggles on each press (rising edge) and holds that state until the next press.
+enum PressMode {
+  MOMENTARY_MODE,
+  LATCH_MODE,
+};
+
 class QwiicBtnComponent : public Component, public i2c::I2CDevice {
   SUB_BINARY_SENSOR(pressed)
 
@@ -26,12 +33,16 @@ class QwiicBtnComponent : public Component, public i2c::I2CDevice {
   void dump_config() override;
 
   void set_debounce_time(uint16_t debounce_time) { this->debounce_time_ = debounce_time; }
+  void set_press_mode(PressMode press_mode) { this->press_mode_ = press_mode; }
 
   // brightness: 0 (off) - 255 (full brightness); sets a steady, non-pulsing LED output
   void set_led_brightness(uint8_t brightness);
 
  protected:
   uint16_t debounce_time_{20};
+  PressMode press_mode_{MOMENTARY_MODE};
+  bool last_is_pressed_{false};
+  bool latch_state_{false};
 
   enum ErrorCode {
     NONE = 0,
@@ -43,6 +54,7 @@ class QwiicBtnComponent : public Component, public i2c::I2CDevice {
 
   bool read_status_();
   void clear_events_();
+  void update_pressed_state_(bool is_pressed);
   bool write_register_16_(uint8_t a_register, uint16_t value);
 };
 

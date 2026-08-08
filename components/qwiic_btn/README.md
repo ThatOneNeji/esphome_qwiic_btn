@@ -28,10 +28,15 @@ binary_sensor:
   - platform: qwiic_btn
     qwiic_btn_id: my_button
     name: "Qwiic Button"
+    mode: MOMENTARY  # optional, MOMENTARY (default) or LATCH
 ```
 
 Accepts all standard `binary_sensor` options (`device_class`, `filters`, `on_press`/`on_release` automations, etc).
-The state reflects the live (debounced) `isPressed` bit of the device's status register, polled every loop.
+
+| `mode`      | Behavior                                                                                                                            |
+|-------------|----------------------------------------------------------------------------------------------------------------------------------------|
+| `MOMENTARY` | (default) State reflects the live (debounced) `isPressed` bit of the device's status register.                                       |
+| `LATCH`     | State toggles each time the button is pressed down, and holds until the next press (push-on/push-off). Resets to `false` on boot.    |
 
 ## Controlling the LED
 

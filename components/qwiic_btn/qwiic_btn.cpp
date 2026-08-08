@@ -30,9 +30,14 @@ void QwiicBtnComponent::setup() {
     return;
   }
 
-  // Publish the starting state so the binary_sensor isn't left in an unknown state
-  if (this->read_status_() && this->pressed_binary_sensor_ != nullptr) {
-    this->pressed_binary_sensor_->publish_state(this->status_reg_.is_pressed);
+  // Publish the starting state so the binary_sensor isn't left in an unknown state. In LATCH_MODE this is just
+  // the initial (unpressed) latch_state_, not the raw pressed level.
+  if (this->read_status_()) {
+    this->last_is_pressed_ = this->status_reg_.is_pressed;
+    if (this->pressed_binary_sensor_ != nullptr) {
+      bool initial_state = this->press_mode_ == LATCH_MODE ? this->latch_state_ : this->status_reg_.is_pressed;
+      this->pressed_binary_sensor_->publish_state(initial_state);
+    }
   }
 }
 
@@ -42,9 +47,7 @@ void QwiicBtnComponent::loop() {
     return;
   }
 
-  if (this->pressed_binary_sensor_ != nullptr) {
-    this->pressed_binary_sensor_->publish_state(this->status_reg_.is_pressed);
-  }
+  this->update_pressed_state_(this->status_reg_.is_pressed);
 
   if (this->status_reg_.event_available) {
     this->clear_events_();
@@ -52,6 +55,20 @@ void QwiicBtnComponent::loop() {
 }
 
 bool QwiicBtnComponent::read_status_() { return this->read_byte(QWIIC_BUTTON_STATUS, &this->status_reg_.reg); }
+
+void QwiicBtnComponent::update_pressed_state_(bool is_pressed) {
+  if (this->press_mode_ == LATCH_MODE) {
+    // Toggle only on the rising edge (button just pressed down), then hold until the next press
+    if (is_pressed && !this->last_is_pressed_) {
+      this->latch_state_ = !this->latch_state_;
+      if (this->pressed_binary_sensor_ != nullptr)
+        this->pressed_binary_sensor_->publish_state(this->latch_state_);
+    }
+  } else if (this->pressed_binary_sensor_ != nullptr) {
+    this->pressed_binary_sensor_->publish_state(is_pressed);
+  }
+  this->last_is_pressed_ = is_pressed;
+}
 
 void QwiicBtnComponent::clear_events_() {
   // Writing 0x00 clears event_available and has_been_clicked; is_pressed simply reflects live hardware state
@@ -75,6 +92,7 @@ bool QwiicBtnComponent::write_register_16_(uint8_t a_register, uint16_t value) {
 
 void QwiicBtnComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Qwiic Button:");
+  ESP_LOGCONFIG(TAG, "  Press Mode: %s", this->press_mode_ == LATCH_MODE ? "LATCH" : "MOMENTARY");
 
   switch (this->error_code_) {
     case NONE:
