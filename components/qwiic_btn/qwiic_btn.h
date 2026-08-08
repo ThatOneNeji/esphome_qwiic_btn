@@ -34,6 +34,7 @@ class QwiicBtnComponent : public Component, public i2c::I2CDevice {
 
   void set_debounce_time(uint16_t debounce_time) { this->debounce_time_ = debounce_time; }
   void set_press_mode(PressMode press_mode) { this->press_mode_ = press_mode; }
+  void set_default_led_brightness(uint8_t brightness) { this->default_led_brightness_ = brightness; }
 
   // brightness: 0 (off) - 255 (full brightness); sets a steady, non-pulsing LED output
   void set_led_brightness(uint8_t brightness);
@@ -43,6 +44,7 @@ class QwiicBtnComponent : public Component, public i2c::I2CDevice {
   PressMode press_mode_{MOMENTARY_MODE};
   bool last_is_pressed_{false};
   bool latch_state_{false};
+  uint8_t default_led_brightness_{0};
 
   enum ErrorCode {
     NONE = 0,

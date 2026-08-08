@@ -16,6 +16,7 @@ QwiicBtnComponent = qwiic_btn_ns.class_(
 
 CONF_QWIIC_BTN_ID = "qwiic_btn_id"
 CONF_DEBOUNCE_TIME = "debounce_time"
+CONF_DEFAULT_LED_BRIGHTNESS = "default_led_brightness"
 
 CONFIG_SCHEMA = (
     cv.Schema(
@@ -25,6 +26,8 @@ CONFIG_SCHEMA = (
                 cv.positive_time_period_milliseconds,
                 cv.Range(max=TimePeriod(milliseconds=65535)),
             ),
+            # LED brightness forced onto the device every boot, before any light/output automation runs
+            cv.Optional(CONF_DEFAULT_LED_BRIGHTNESS, default="0%"): cv.percentage,
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
@@ -38,3 +41,6 @@ async def to_code(config):
     await i2c.register_i2c_device(var, config)
 
     cg.add(var.set_debounce_time(config[CONF_DEBOUNCE_TIME].total_milliseconds))
+    cg.add(
+        var.set_default_led_brightness(round(config[CONF_DEFAULT_LED_BRIGHTNESS] * 255))
+    )

@@ -11,15 +11,17 @@ button state and `output` for the LED.
 ```yaml
 qwiic_btn:
   id: my_button
-  address: 0x6F        # optional, this is the factory default
-  debounce_time: 20ms   # optional, mechanical debounce time written to the device, default 20ms, max 65535ms
+  address: 0x6F                 # optional, this is the factory default
+  debounce_time: 20ms           # optional, mechanical debounce time written to the device, default 20ms, max 65535ms
+  default_led_brightness: 0%    # optional, LED brightness forced at boot, before any automation runs, default 0%
 ```
 
-| Option           | Default | Description                                                        |
-|-------------------|---------|----------------------------------------------------------------------|
-| `id`               | -       | ID to reference this hub from `binary_sensor:`/`output:` entries.   |
-| `address`          | `0x6F`  | I2C address of the board.                                            |
-| `debounce_time`    | `20ms`  | Mechanical debounce time (max `65535ms`), configured on the device.  |
+| Option                    | Default | Description                                                                                   |
+|----------------------------|---------|-------------------------------------------------------------------------------------------------|
+| `id`                        | -       | ID to reference this hub from `binary_sensor:`/`output:` entries.                              |
+| `address`                   | `0x6F`  | I2C address of the board.                                                                       |
+| `debounce_time`              | `20ms`  | Mechanical debounce time (max `65535ms`), configured on the device.                             |
+| `default_led_brightness`     | `0%`    | LED brightness written to the device during `setup()`, before `light`/`output` automations run. Overrides whatever the device's own power-on/leftover brightness happens to be, so boot behavior is deterministic. |
 
 ## Reading the button
 

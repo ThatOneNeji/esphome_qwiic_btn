@@ -30,6 +30,11 @@ void QwiicBtnComponent::setup() {
     return;
   }
 
+  // Force the LED to a known state on every boot. The device otherwise keeps whatever brightness it last had
+  // (its own power-on default, or a leftover value from before a reboot), independent of anything the `light`/
+  // `output` platforms do once they start up.
+  this->set_led_brightness(this->default_led_brightness_);
+
   // Publish the starting state so the binary_sensor isn't left in an unknown state. In LATCH_MODE this is just
   // the initial (unpressed) latch_state_, not the raw pressed level.
   if (this->read_status_()) {
@@ -93,6 +98,7 @@ bool QwiicBtnComponent::write_register_16_(uint8_t a_register, uint16_t value) {
 void QwiicBtnComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "Qwiic Button:");
   ESP_LOGCONFIG(TAG, "  Press Mode: %s", this->press_mode_ == LATCH_MODE ? "LATCH" : "MOMENTARY");
+  ESP_LOGCONFIG(TAG, "  Default LED Brightness: %u", this->default_led_brightness_);
 
   switch (this->error_code_) {
     case NONE:
