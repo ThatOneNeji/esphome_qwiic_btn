@@ -17,6 +17,13 @@ jobs:
         with:
           python-version: "3.12"
       - uses: pre-commit/action@v3.0.1
+        env:
+          # no-commit-to-branch is meant to stop a local `git commit` while on a protected
+          # branch; CI always has that branch checked out by the time it runs (that's the point
+          # of the push trigger below), so the hook would fail on every single CI run on main.
+          # Branch protection on GitHub is the right place to actually enforce "no direct
+          # commits to main", not this content linter.
+          SKIP: no-commit-to-branch
 
   esphome:
     name: esphome ${{ matrix.step }} (${{ matrix.file }})
