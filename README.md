@@ -55,7 +55,7 @@ configuration reference, and a troubleshooting guide.
 ## Components
 
 | Component | Description |
-|-----------|--------------|
+| ----------- | -------------- |
 | [`qwiic_btn`](components/qwiic_btn/README.md) | I2C hub, `binary_sensor` (button state), and `output` (LED) platforms for the SparkFun Qwiic Button/Switch. |
 
 ## Development
